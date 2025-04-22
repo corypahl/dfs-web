@@ -45,8 +45,15 @@ function renderPlayers() {
     tbody.innerHTML = rows.map(row => `
       <tr>${cols.map(col => {
         if (col === '_headshot') {
-          return `<td style="text-align:center;">${row.headshot_url ? `<img src="${row.headshot_url}" alt="headshot" style="width:36px; height:36px; border-radius:50%;">` : ''}</td>`;
+          const proxyUrl = row.headshot_url || '';
+          let cleanUrl = proxyUrl;
+          try {
+            const urlParams = new URLSearchParams(proxyUrl.split('?')[1]);
+            cleanUrl = urlParams.get('url') || proxyUrl;
+          } catch (e) {}
+          return `<td style="text-align:center;">${cleanUrl ? `<img src="${cleanUrl}" alt="headshot" style="width:36px; height:36px; border-radius:50%;">` : ''}</td>`;
         }
+        if (col === 'headshot_url') return ''; // skip rendering raw headshot_url column
         return `<td>${row[col] ?? ''}</td>`;
       }).join('')}</tr>
     `).join('');
