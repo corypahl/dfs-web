@@ -8,7 +8,9 @@ function handleData(payload) {
 
 function renderPlayers() {
   const container = document.getElementById('tables-container');
-  const cols = Object.keys(playerData[0] || []);
+  let cols = Object.keys(playerData[0] || []);
+  cols = cols.filter(c => c !== 'headshot_url' && c !== 'Team');
+  cols = ['headshot_url', cols[0], 'Team', ...cols.slice(1)];
   let sortKey = null;
   let sortAsc = true;
 
