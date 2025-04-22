@@ -21,6 +21,13 @@ body {
   color: var(--fg);
   font-family: sans-serif;
   padding: 1rem;
+  font-size: 16px;
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+  }
 }
 
 /* ========================
@@ -72,12 +79,12 @@ h1 {
   background: #1a2332;
   border: 1px solid #2e8bff;
   color: #bcdfff;
-  min-width: 48px;
+  min-width: 42px;
   height: 32px;
   border-radius: 6px;
   font-weight: 500;
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
   display: inline-flex;
@@ -99,16 +106,18 @@ h1 {
    Value Filters
 ======================== */
 .value-filters {
-  display: flex;
-  gap: 1rem;
-  margin: 1rem 0;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, max-content));
+  gap: 0.75rem 1rem;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 1rem 0;
 }
 
 .value-filters label {
   color: #ccc;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .value-filters input[type="number"] {
@@ -117,7 +126,9 @@ h1 {
   color: #fff;
   border-radius: 6px;
   padding: 6px 10px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  width: 100%;
+  max-width: 120px;
   box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
