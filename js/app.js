@@ -69,3 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
   script.src = 'https://script.google.com/macros/s/AKfycbzODSyKW5YZpujVWZMr8EQkpMKRwaKPI_lYiAv2mxDe-dCr9LRfEjt8-wzqBB_X4QKxug/exec?callback=handleData';
   document.body.appendChild(script);
 });
+
+function handleData(payload) {
+  // Hide loading spinner
+  document.getElementById('loading').style.display = 'none';
+
+  dataStore = payload;
+  initTabs();
+  renderSheet('Players');
+}

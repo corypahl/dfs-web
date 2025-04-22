@@ -64,3 +64,18 @@ th, td {
 thead {
   background: #1e1e1e;
 }
+
+#loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#loading img {
+  width: 64px;
+  height: 64px;
+}
