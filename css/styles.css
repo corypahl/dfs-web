@@ -64,13 +64,13 @@
     padding: 0.5rem;
     border: 1px solid #333;
   }
+
+  td {
+    transition: background-color 0.2s ease;
+  }  
   
   thead {
     background: #1e1e1e;
-  }
-
-  td img {
-    vertical-align: middle;
   }
   
   .player-info {

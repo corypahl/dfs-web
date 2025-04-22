@@ -1,4 +1,6 @@
 let playerData = [];
+let activeFilters = new Set(['PG', 'SG', 'SF', 'PF', 'C']);
+let defaultSortKey = 'Overall';
 
 function handleData(payload) {
   document.getElementById('loading').style.display = 'none';
@@ -17,9 +19,8 @@ function renderPlayers() {
   }
 
   filterBar.innerHTML = '';
-  // removed buttonContainer creation
   const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
-  let activeFilters = new Set(positions);
+  activeFilters = new Set(positions);
 
   positions.forEach(pos => {
     const btn = document.createElement('button');
@@ -37,13 +38,13 @@ function renderPlayers() {
     });
     filterBar.appendChild(btn);
   });
+
   const container = document.getElementById('tables-container');
   container.innerHTML = '';
-  // removed container.appendChild(buttonContainer);
   const cols = Object.keys(playerData[0] || []);
 
-  let sortKey = null;
-  let sortAsc = true;
+  let sortKey = defaultSortKey;
+  let sortAsc = false; // descending by default
 
   const table = document.createElement('table');
   const thead = document.createElement('thead');
@@ -60,11 +61,24 @@ function renderPlayers() {
     renderRows();
   });
 
+  function getGradientStyle(col, val) {
+    const values = playerData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+    if (!values.length) return '';
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const num = parseFloat(val);
+    if (isNaN(num)) return '';
+    const pct = max === min ? 0 : (num - min) / (max - min);
+    const hue = pct * 120; // red (0) to green (120)
+    return `background-color:hsl(${hue}, 70%, 80%);`;
+  }
+
   function renderRows() {
     const rows = playerData.filter(row => {
       const pos = row['Pos'] || '';
       return Array.from(activeFilters).some(f => pos.includes(f));
     });
+
     if (sortKey) {
       rows.sort((a, b) => {
         const x = a[sortKey] ?? '';
@@ -78,14 +92,21 @@ function renderPlayers() {
     tbody.innerHTML = rows.map(row => {
       return `<tr>${cols.map(col => {
         let val = row[col] ?? '';
-        if (col === 'Fpts' && !isNaN(val)) {
+        let style = '';
+
+        // Formatting rules
+        if (['Fpts Grade', 'Val Grade', 'Overall'].includes(col) && !isNaN(val)) {
+          val = parseInt(val);
+          style = getGradientStyle(col, val);
+        } else if (col === 'Fpts' && !isNaN(val)) {
           val = parseFloat(val).toFixed(1);
         } else if (col === 'Salary' && !isNaN(val)) {
           val = `$${parseFloat(val).toLocaleString()}`;
         } else if (col === 'Value' && !isNaN(val)) {
           val = parseFloat(val).toFixed(2);
         }
-        return `<td>${val}</td>`;
+
+        return `<td style="${style}">${val}</td>`;
       }).join('')}</tr>`;
     }).join('');
   }
