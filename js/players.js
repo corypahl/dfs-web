@@ -8,52 +8,47 @@ function handleData(payload) {
 
 function renderPlayers() {
   const container = document.getElementById('tables-container');
-  const input = document.getElementById('player-filter');
-  const allCols = Object.keys(playerData[0] || {}).filter(c => c !== 'headshot_url');
-const cols = ['Team', ...allCols.filter(c => c !== 'Name' && c !== 'Team')];
+  const cols = Object.keys(playerData[0] || []);
+  let sortKey = null;
+  let sortAsc = true;
 
-  input.addEventListener('input', () => {
-    renderRows(input.value.toLowerCase());
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const tbody = document.createElement('tbody');
+
+  thead.innerHTML = `<tr>${cols.map(col => `<th class="sortable" data-col="${col}">${col}</th>`).join('')}</tr>`;
+
+  thead.addEventListener('click', e => {
+    const th = e.target.closest('th');
+    if (!th || !th.dataset.col) return;
+    const col = th.dataset.col;
+    sortAsc = (sortKey === col) ? !sortAsc : true;
+    sortKey = col;
+    renderRows();
   });
 
-  function renderRows(filter = '') {
-    const rows = playerData.filter(row =>
-      Object.values(row).some(val =>
-        (val ?? '').toString().toLowerCase().includes(filter)
-      )
-    );
+  function renderRows() {
+    const rows = [...playerData];
+    if (sortKey) {
+      rows.sort((a, b) => {
+        const x = a[sortKey] ?? '';
+        const y = b[sortKey] ?? '';
+        return sortAsc
+          ? x.toString().localeCompare(y.toString(), undefined, { numeric: true })
+          : y.toString().localeCompare(x.toString(), undefined, { numeric: true });
+      });
+    }
 
-    const table = document.createElement('table');
-    const thead = `<thead><tr><th>Player</th>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>`;
-    const tbody = `<tbody>${rows.map(row => {
-      const headshot = row.headshot_url ? `<img src="${row.headshot_url}" alt="" class="headshot">` : '';
-      const position = row.Position ? `<span class="position">${row.Position}</span>` : '';
-      const name = row.Name ? `<span class="name">${row.Name}</span>` : '';
-      const meta = row['Game Info'] ? `<div class="meta">${row['Game Info']}</div>` : '';
-      const team = row.Team ? `<strong>${row.Team}</strong>` : '';
-
-      const playerCell = `
-        <div class="player-info">
-          ${headshot}
-          <div class="player-details">
-            <div class="player-name-line">${position} ${name}</div>
-            <div class="meta">${team}<br>${meta}</div>
-          </div>
-        </div>
-      `;
-
-      return `<tr>
-        <td>${playerCell}</td>
-        ${cols.map(col => `<td class="number">${row[col] ?? ''}</td>`).join('')}
-      </tr>`;
-    }).join('')}</tbody>`;
-
-    table.innerHTML = thead + tbody;
-    container.innerHTML = '';
-    container.appendChild(table);
+    tbody.innerHTML = rows.map(row => `
+      <tr>${cols.map(col => `<td>${row[col] ?? ''}</td>`).join('')}</tr>
+    `).join('');
   }
 
   renderRows();
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  container.innerHTML = '';
+  container.appendChild(table);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
