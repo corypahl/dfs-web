@@ -13,14 +13,23 @@ const SPORT_POSITIONS = {
 
 function detectSportFromPlayers(players) {
   const allPositions = new Set(
-    players.flatMap(p => (p.Pos ?? '').split(/\s*\/\s*/).filter(Boolean))
+    players.flatMap(p => (p.Pos ?? '').split(/[\s/]+/).filter(Boolean))
   );
+
+  let bestSport = 'NBA';
+  let maxMatches = 0;
+
   for (const [sport, knownPositions] of Object.entries(SPORT_POSITIONS)) {
-    const match = Array.from(allPositions).every(pos => knownPositions.includes(pos));
-    if (match) return sport;
+    const matchCount = Array.from(allPositions).filter(pos => knownPositions.includes(pos)).length;
+    if (matchCount > maxMatches) {
+      bestSport = sport;
+      maxMatches = matchCount;
+    }
   }
-  return 'NBA'; // default fallback
+
+  return bestSport;
 }
+
 
 function handleData(payload) {
   document.getElementById('loading').style.display = 'none';
