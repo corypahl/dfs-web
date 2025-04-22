@@ -1,6 +1,6 @@
 let dataStore = {};
 
-// Show errors visually on mobile
+// Show JS errors on screen for debugging
 window.onerror = (msg, src, row, col, err) => {
   const p = document.createElement('pre');
   p.style.color = 'salmon';
@@ -15,13 +15,14 @@ window.addEventListener('unhandledrejection', ev => {
   document.body.appendChild(p);
 });
 
-// Called by JSONP
+// JSONP callback
 function handleData(payload) {
   dataStore = payload;
   initTabs();
   renderSheet('Players');
 }
 
+// Tab functionality
 function initTabs() {
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -32,6 +33,7 @@ function initTabs() {
   });
 }
 
+// Table rendering
 function renderSheet(sheetName) {
   const rows = dataStore[sheetName] || [];
   const container = document.getElementById('tables-container');
@@ -61,7 +63,9 @@ function renderSheet(sheetName) {
   container.appendChild(section);
 }
 
-// Dynamically inject JSONP script from Apps Script
-(function loadJSONP() {
+// Wait until DOM is ready, then inject JSONP script
+document.addEventListener('DOMContentLoaded', () => {
   const script = document.createElement('script');
-  script.src = 'https://script.google.com/macros/s/AKfycbzODSyKW5YZpujVWZMr8EQkpMKRwaKPI_lYiAv
+  script.src = 'https://script.google.com/macros/s/AKfycbzODSyKW5YZpujVWZMr8EQkpMKRwaKPI_lYiAv2mxDe-dCr9LRfEjt8-wzqBB_X4QKxug/exec?callback=handleData';
+  document.body.appendChild(script);
+});
