@@ -1,8 +1,26 @@
 let playerData = [];
 let injuriesByName = new Set();
-let activeFilters = new Set(['PG', 'SG', 'SF', 'PF', 'C']);
+let activeFilters = new Set();
 let defaultSortKey = 'Overall';
 let hideInjured = false;
+let CURRENT_SPORT = 'NBA';
+
+const SPORT_POSITIONS = {
+  NBA: ['PG', 'SG', 'SF', 'PF', 'C'],
+  NFL: ['QB', 'RB', 'WR', 'TE', 'DST'],
+  MLB: ['P', 'C', '1B', '2B', '3B', 'SS', 'OF']
+};
+
+function detectSportFromPlayers(players) {
+  const allPositions = new Set(
+    players.flatMap(p => (p.Pos ?? '').split(/\s*\/\s*/).filter(Boolean))
+  );
+  for (const [sport, knownPositions] of Object.entries(SPORT_POSITIONS)) {
+    const match = Array.from(allPositions).every(pos => knownPositions.includes(pos));
+    if (match) return sport;
+  }
+  return 'NBA'; // default fallback
+}
 
 function handleData(payload) {
   document.getElementById('loading').style.display = 'none';
@@ -12,6 +30,8 @@ function handleData(payload) {
 
   injuriesByName = new Set(allInjuries.map(row => row.Name?.trim()));
   playerData = allPlayers.filter(row => parseFloat(row['Fpts']) > 0);
+
+  CURRENT_SPORT = detectSportFromPlayers(playerData);
 
   renderPlayers();
 }
@@ -27,7 +47,7 @@ function renderPlayers() {
   }
 
   filterBar.innerHTML = '';
-  const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
+  const positions = SPORT_POSITIONS[CURRENT_SPORT];
   activeFilters = new Set(positions);
 
   positions.forEach(pos => {
@@ -47,13 +67,12 @@ function renderPlayers() {
     filterBar.appendChild(btn);
   });
 
-  // 💊 Injury toggle switch
   const injToggleWrapper = document.createElement('label');
   injToggleWrapper.className = 'inj-toggle';
   injToggleWrapper.innerHTML = `
     <input type="checkbox" id="hide-injured">
     <span class="slider"></span>
-    <span class="label">💊 Hide Injured</span>
+    <span class="label">\ud83d\udc8a Hide Injured</span>
   `;
   filterBar.appendChild(injToggleWrapper);
 
