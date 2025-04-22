@@ -8,9 +8,7 @@ function handleData(payload) {
 
 function renderPlayers() {
   const container = document.getElementById('tables-container');
-  let cols = Object.keys(playerData[0] || []);
-  cols = cols.filter(c => c !== 'headshot_url');
-  cols = ['_headshot', ...cols.filter(c => c !== 'Team').slice(0, 1), 'Team', ...cols.filter(c => c !== 'Team').slice(1)];
+  const cols = Object.keys(playerData[0] || []);
 
   let sortKey = null;
   let sortAsc = true;
@@ -19,7 +17,7 @@ function renderPlayers() {
   const thead = document.createElement('thead');
   const tbody = document.createElement('tbody');
 
-  thead.innerHTML = `<tr>${cols.map(col => `<th class="sortable" data-col="${col}">${col === '_headshot' ? '' : col}</th>`).join('')}</tr>`;
+  thead.innerHTML = `<tr>${cols.map(col => `<th class="sortable" data-col="${col}">${col}</th>`).join('')}</tr>`;
 
   thead.addEventListener('click', e => {
     const th = e.target.closest('th');
@@ -32,7 +30,7 @@ function renderPlayers() {
 
   function renderRows() {
     const rows = [...playerData];
-    if (sortKey && sortKey !== '_headshot') {
+    if (sortKey) {
       rows.sort((a, b) => {
         const x = a[sortKey] ?? '';
         const y = b[sortKey] ?? '';
@@ -43,19 +41,7 @@ function renderPlayers() {
     }
 
     tbody.innerHTML = rows.map(row => `
-      <tr>${cols.map(col => {
-        if (col === '_headshot') {
-          const proxyUrl = row.headshot_url || '';
-          let cleanUrl = proxyUrl;
-          try {
-            const urlParams = new URLSearchParams(proxyUrl.split('?')[1]);
-            cleanUrl = urlParams.get('url') || proxyUrl;
-          } catch (e) {}
-          return `<td style="text-align:center;">${cleanUrl ? `<img src="${cleanUrl}" alt="headshot" style="width:36px; height:36px; border-radius:50%;">` : ''}</td>`;
-        }
-        if (col === 'headshot_url') return ''; // skip rendering raw headshot_url column
-        return `<td>${row[col] ?? ''}</td>`;
-      }).join('')}</tr>
+      <tr>${cols.map(col => `<td>${row[col] ?? ''}</td>`).join('')}</tr>
     `).join('');
   }
 
