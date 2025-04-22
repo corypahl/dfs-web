@@ -1,68 +1,111 @@
-window.onerror = (msg, src, row, col, err) => {
-    const p = document.createElement('pre');
-    p.style.color = 'salmon';
-    p.textContent = `ERROR: ${msg} at ${row}:${col}`;
-    document.body.appendChild(p);
-  };
-  
-  window.addEventListener('unhandledrejection', ev => {
-    const p = document.createElement('pre');
-    p.style.color = 'salmon';
-    p.textContent = `Promise rejection: ${ev.reason}`;
-    document.body.appendChild(p);
+let playerData = [];
+let activeFilters = new Set(['PG', 'SG', 'SF', 'PF', 'C']);
+
+function handleData(payload) {
+  document.getElementById('loading').style.display = 'none';
+  playerData = payload['Players'] || [];
+  renderPlayers();
+}
+
+function renderPlayers() {
+  const main = document.querySelector('main');
+  let filterBar = document.getElementById('position-filters');
+  if (!filterBar) {
+    filterBar = document.createElement('div');
+    filterBar.id = 'position-filters';
+    filterBar.className = 'pos-filter';
+    main.insertBefore(filterBar, document.getElementById('tables-container'));
+  }
+
+  filterBar.innerHTML = '';
+  const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
+  activeFilters = new Set(positions);
+
+  positions.forEach(pos => {
+    const btn = document.createElement('button');
+    btn.textContent = pos;
+    btn.classList.add('pos-btn', 'active');
+    btn.addEventListener('click', () => {
+      if (activeFilters.has(pos)) {
+        activeFilters.delete(pos);
+        btn.classList.remove('active');
+      } else {
+        activeFilters.add(pos);
+        btn.classList.add('active');
+      }
+      renderRows();
+    });
+    filterBar.appendChild(btn);
   });
-  
-  function handleData(payload) {
-    document.getElementById('loading').style.display = 'none';
-    renderSummary(payload);
-    renderPlayerPreview(payload['Players'] || []);
-  }
-  
-  function renderSummary(data) {
-    const el = document.getElementById('summary');
-    const counts = {
-      players: (data['Players'] || []).length,
-      matchups: (data['Matchups'] || []).length,
-      injuries: (data['Injuries'] || []).length
-    };
-    el.innerHTML = `
-      <div class="summary-boxes">
-        <div class="summary-box">Players: <strong>${counts.players}</strong></div>
-        <div class="summary-box">Matchups: <strong>${counts.matchups}</strong></div>
-        <div class="summary-box">Injuries: <strong>${counts.injuries}</strong></div>
-      </div>
-    `;
-  }
-  
-  function renderPlayerPreview(players) {
-    const preview = players.slice(0, 10);
-    const cols = ['Name', 'Team', 'Position', 'Salary'];
-    const container = document.getElementById('player-preview');
-    const table = document.createElement('table');
-  
-    const thead = `<thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>`;
-    const tbody = `<tbody>${preview.map(row => `
-      <tr>
-        ${cols.map(col => {
-          if (col === 'Name') {
-            const img = row.headshot_url
-              ? `<img src="${row.headshot_url}" alt="" style="width:20px; height:20px; border-radius:50%; margin-right:0.5rem; vertical-align:middle;">`
-              : '';
-            return `<td>${img}${row[col]}</td>`;
-          }
-          return `<td>${row[col] ?? ''}</td>`;
-        }).join('')}
-      </tr>`).join('')}</tbody>`;
-  
-    table.innerHTML = thead + tbody;
-    container.innerHTML = '<h2>Top 10 Players</h2>';
-    container.appendChild(table);
-  }
-  
-  // Inject JSONP
-  document.addEventListener('DOMContentLoaded', () => {
-    const script = document.createElement('script');
-    script.src = 'https://script.google.com/macros/s/AKfycbzODSyKW5YZpujVWZMr8EQkpMKRwaKPI_lYiAv2mxDe-dCr9LRfEjt8-wzqBB_X4QKxug/exec?callback=handleData';
-    document.body.appendChild(script);
+
+  const container = document.getElementById('tables-container');
+  container.innerHTML = '';
+  const cols = Object.keys(playerData[0] || []);
+
+  let sortKey = null;
+  let sortAsc = true;
+
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const tbody = document.createElement('tbody');
+
+  thead.innerHTML = `<tr>${cols.map(col => `<th class="sortable" data-col="${col}">${col}</th>`).join('')}</tr>`;
+
+  thead.addEventListener('click', e => {
+    const th = e.target.closest('th');
+    if (!th || !th.dataset.col) return;
+    const col = th.dataset.col;
+    sortAsc = (sortKey === col) ? !sortAsc : true;
+    sortKey = col;
+    renderRows();
   });
-  
+
+  function renderRows() {
+    const rows = playerData.filter(row => {
+      const pos = row['Pos'] || '';
+      return Array.from(activeFilters).some(f => pos.includes(f));
+    });
+
+    if (sortKey) {
+      rows.sort((a, b) => {
+        const x = a[sortKey] ?? '';
+        const y = b[sortKey] ?? '';
+        return sortAsc
+          ? x.toString().localeCompare(y.toString(), undefined, { numeric: true })
+          : y.toString().localeCompare(x.toString(), undefined, { numeric: true });
+      });
+    }
+
+    tbody.innerHTML = rows.map(row => {
+      return `<tr>${cols.map(col => {
+        let val = row[col] ?? '';
+        if (col === 'Fpts' && !isNaN(val)) {
+          val = parseFloat(val).toFixed(1);
+        } else if (col === 'Salary' && !isNaN(val)) {
+          val = `$${parseFloat(val).toLocaleString()}`;
+        } else if (col === 'Value' && !isNaN(val)) {
+          val = parseFloat(val).toFixed(2);
+        }
+        return `<td>${val}</td>`;
+      }).join('')}</tr>`;
+    }).join('');
+  }
+
+  renderRows();
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  container.innerHTML = '';
+  container.appendChild(table);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const script = document.createElement('script');
+  script.src = 'https://script.google.com/macros/s/AKfycbzODSyKW5YZpujVWZMr8EQkpMKRwaKPI_lYiAv2mxDe-dCr9LRfEjt8-wzqBB_X4QKxug/exec?callback=handleData';
+  document.body.appendChild(script);
+
+  // Delay button cleanup in case content loads later
+  setTimeout(() => {
+    const navButtons = document.querySelector('.nav-buttons');
+    if (navButtons) navButtons.remove();
+  }, 100);
+});

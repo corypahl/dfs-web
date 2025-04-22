@@ -46,6 +46,10 @@
     color: #000;
     border-color: var(--accent);
   }
+
+  .pos-btn {
+    text-decoration: none;
+  }  
   
   section {
     margin-top: 1rem;
@@ -73,13 +77,6 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-  }
-  
-  .headshot {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid #009cf1;
   }
   
   .player-details {
