@@ -44,7 +44,7 @@ function renderPlayers() {
   const cols = Object.keys(playerData[0] || []);
 
   let sortKey = defaultSortKey;
-  let sortAsc = false; // descending by default
+  let sortAsc = false; // Descending by default
 
   const table = document.createElement('table');
   const thead = document.createElement('thead');
@@ -69,14 +69,16 @@ function renderPlayers() {
     const num = parseFloat(val);
     if (isNaN(num)) return '';
     const pct = max === min ? 0 : (num - min) / (max - min);
-    const hue = pct * 120; // red (0) to green (120)
+    const hue = pct * 120; // 0 = red, 120 = green
     return `background-color:hsl(${hue}, 70%, 80%);`;
   }
 
   function renderRows() {
     const rows = playerData.filter(row => {
       const pos = row['Pos'] || '';
-      return Array.from(activeFilters).some(f => pos.includes(f));
+      const fpts = parseFloat(row['Fpts']);
+      const validPosition = Array.from(activeFilters).some(f => pos.includes(f));
+      return validPosition && fpts > 0;
     });
 
     if (sortKey) {
@@ -94,7 +96,7 @@ function renderPlayers() {
         let val = row[col] ?? '';
         let style = '';
 
-        // Formatting rules
+        // Format specific columns
         if (['Fpts Grade', 'Val Grade', 'Overall'].includes(col) && !isNaN(val)) {
           val = parseInt(val);
           style = getGradientStyle(col, val);
