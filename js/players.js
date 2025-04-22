@@ -7,7 +7,30 @@ function handleData(payload) {
 }
 
 function renderPlayers() {
+  const buttonContainer = document.createElement('div');
+  buttonContainer.className = 'pos-filter';
+  const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
+  let activeFilters = new Set(positions);
+
+  positions.forEach(pos => {
+    const btn = document.createElement('button');
+    btn.textContent = pos;
+    btn.classList.add('pos-btn', 'active');
+    btn.addEventListener('click', () => {
+      if (activeFilters.has(pos)) {
+        activeFilters.delete(pos);
+        btn.classList.remove('active');
+      } else {
+        activeFilters.add(pos);
+        btn.classList.add('active');
+      }
+      renderRows();
+    });
+    buttonContainer.appendChild(btn);
+  });
   const container = document.getElementById('tables-container');
+  container.innerHTML = '';
+  container.appendChild(buttonContainer);
   const cols = Object.keys(playerData[0] || []);
 
   let sortKey = null;
@@ -29,7 +52,10 @@ function renderPlayers() {
   });
 
   function renderRows() {
-    const rows = [...playerData];
+    const rows = playerData.filter(row => {
+      const pos = row['Pos'] || '';
+      return Array.from(activeFilters).some(f => pos.includes(f));
+    });
     if (sortKey) {
       rows.sort((a, b) => {
         const x = a[sortKey] ?? '';
