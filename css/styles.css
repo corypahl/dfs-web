@@ -64,3 +64,8 @@
   thead {
     background: #1e1e1e;
   }
+
+  td img {
+    vertical-align: middle;
+  }
+  
