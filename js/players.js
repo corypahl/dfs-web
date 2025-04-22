@@ -40,9 +40,19 @@ function renderPlayers() {
       });
     }
 
-    tbody.innerHTML = rows.map(row => `
-      <tr>${cols.map(col => `<td>${row[col] ?? ''}</td>`).join('')}</tr>
-    `).join('');
+    tbody.innerHTML = rows.map(row => {
+      return `<tr>${cols.map(col => {
+        let val = row[col] ?? '';
+        if (col === 'Fpts' && !isNaN(val)) {
+          val = parseFloat(val).toFixed(1);
+        } else if (col === 'Salary' && !isNaN(val)) {
+          val = `$${parseFloat(val).toLocaleString()}`;
+        } else if (col === 'Value' && !isNaN(val)) {
+          val = parseFloat(val).toFixed(2);
+        }
+        return `<td>${val}</td>`;
+      }).join('')}</tr>`;
+    }).join('');
   }
 
   renderRows();
