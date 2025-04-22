@@ -13,8 +13,11 @@ function handleData(payload) {
 }
 
 function renderInjuries() {
-  const playerMap = new Map(playersData.map(p => [p.Name?.trim(), p]));
-  const filtered = injuriesData.filter(row => playerMap.has(row.Name?.trim()));
+  const playerMap = new Map(playersData.map(p => [p.Player?.trim(), p]));
+  const filtered = injuriesData.filter(row => {
+    const name = row.Name?.trim();
+    return name && name !== '' && playerMap.has(name);
+  });
 
   console.log("Players loaded:", playersData.length);
   console.log("Injuries loaded:", injuriesData.length);
@@ -28,7 +31,7 @@ function renderInjuries() {
     return;
   }
 
-  const cols = Object.keys(filtered[0]);
+  const cols = Object.keys(filtered[0]).filter(col => col !== '');
   let sortKey = null;
   let sortAsc = true;
 

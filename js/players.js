@@ -1,24 +1,26 @@
 let playerData = [];
-let injuriesByName = new Set();
+let injuriesByName = new Map();
 let activeFilters = new Set();
 let defaultSortKey = 'Overall';
 let hideInjured = false;
 let CURRENT_SPORT = 'NBA';
+let minSalary = parseFloat(localStorage.getItem('minSalary')) || 0;
+let maxSalary = parseFloat(localStorage.getItem('maxSalary')) || Infinity;
+let minFpts = parseFloat(localStorage.getItem('minFpts')) || 0;
 
 const SPORT_POSITIONS = {
   NBA: ['PG', 'SG', 'SF', 'PF', 'C'],
   NFL: ['QB', 'RB', 'WR', 'TE', 'DST'],
-  MLB: ['P', 'C', '1B', '2B', '3B', 'SS', 'OF']
+  MLB: ['P', 'C', '1B', '2B', '3B', 'SS', 'OF'],
+  NHL: ['C', 'LW', 'RW', 'D', 'G']
 };
 
 function detectSportFromPlayers(players) {
   const allPositions = new Set(
     players.flatMap(p => (p.Pos ?? '').split(/[\s/]+/).filter(Boolean))
   );
-
   let bestSport = 'NBA';
   let maxMatches = 0;
-
   for (const [sport, knownPositions] of Object.entries(SPORT_POSITIONS)) {
     const matchCount = Array.from(allPositions).filter(pos => knownPositions.includes(pos)).length;
     if (matchCount > maxMatches) {
@@ -26,10 +28,8 @@ function detectSportFromPlayers(players) {
       maxMatches = matchCount;
     }
   }
-
   return bestSport;
 }
-
 
 function handleData(payload) {
   document.getElementById('loading').style.display = 'none';
@@ -37,9 +37,13 @@ function handleData(payload) {
   const allPlayers = payload['Players'] || [];
   const allInjuries = payload['Injuries'] || [];
 
-  injuriesByName = new Set(allInjuries.map(row => row.Name?.trim()));
-  playerData = allPlayers.filter(row => parseFloat(row['Fpts']) > 0);
+  allInjuries.forEach(inj => {
+    if (inj.Name?.trim()) {
+      injuriesByName.set(inj.Name.trim(), inj);
+    }
+  });
 
+  playerData = allPlayers.filter(row => parseFloat(row['Fpts']) > 0);
   CURRENT_SPORT = detectSportFromPlayers(playerData);
 
   renderPlayers();
@@ -76,12 +80,39 @@ function renderPlayers() {
     filterBar.appendChild(btn);
   });
 
+  const filterInputs = document.createElement('div');
+  filterInputs.className = 'value-filters';
+  filterInputs.innerHTML = `
+    <label>Min Salary <input type="number" id="min-salary" placeholder="0" value="${isFinite(minSalary) ? minSalary : ''}"></label>
+    <label>Max Salary <input type="number" id="max-salary" placeholder="10000" value="${isFinite(maxSalary) ? maxSalary : ''}"></label>
+    <label>Min Fpts <input type="number" id="min-fpts" placeholder="0" value="${minFpts}"></label>
+  `;
+  filterBar.appendChild(filterInputs);
+
+  document.getElementById('min-salary').addEventListener('input', e => {
+    minSalary = parseFloat(e.target.value) || 0;
+    localStorage.setItem('minSalary', minSalary);
+    renderRows();
+  });
+
+  document.getElementById('max-salary').addEventListener('input', e => {
+    maxSalary = parseFloat(e.target.value) || Infinity;
+    localStorage.setItem('maxSalary', maxSalary);
+    renderRows();
+  });
+
+  document.getElementById('min-fpts').addEventListener('input', e => {
+    minFpts = parseFloat(e.target.value) || 0;
+    localStorage.setItem('minFpts', minFpts);
+    renderRows();
+  });
+
   const injToggleWrapper = document.createElement('label');
   injToggleWrapper.className = 'inj-toggle';
   injToggleWrapper.innerHTML = `
     <input type="checkbox" id="hide-injured">
     <span class="slider"></span>
-    <span class="label">\ud83d\udc8a Hide Injured</span>
+    <span class="label">💊 Hide Injured</span>
   `;
   filterBar.appendChild(injToggleWrapper);
 
@@ -128,9 +159,13 @@ function renderPlayers() {
   function renderRows() {
     const rows = playerData.filter(row => {
       const pos = row['Pos'] || '';
-      const isInjured = injuriesByName.has(row['Name']?.trim());
+      const isInjured = injuriesByName.has(row['Player']?.trim());
       const matchesPos = Array.from(activeFilters).some(f => pos.includes(f));
-      return matchesPos && (!hideInjured || !isInjured);
+      const salary = parseFloat(row['Salary']);
+      const fpts = parseFloat(row['Fpts']);
+      const passesSalary = !isNaN(salary) && salary >= minSalary && salary <= maxSalary;
+      const passesFpts = !isNaN(fpts) && fpts >= minFpts;
+      return matchesPos && (!hideInjured || !isInjured) && passesSalary && passesFpts;
     });
 
     if (sortKey) {
@@ -149,7 +184,8 @@ function renderPlayers() {
         let style = '';
 
         if (col === 'Inj') {
-          return `<td>${injuriesByName.has(row['Name']?.trim()) ? '💊' : ''}</td>`;
+          const injury = injuriesByName.get(row['Player']?.trim());
+          return `<td title="${injury?.Inury || ''} - ${injury?.Status || ''}">${injury ? '💊' : ''}</td>`;
         }
 
         if (['Fpts Grade', 'Val Grade', 'Overall'].includes(col) && !isNaN(val)) {

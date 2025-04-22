@@ -24,7 +24,7 @@ body {
 }
 
 /* ========================
-   Header & Page Title
+   Header & Navigation
 ======================== */
 header {
   margin-bottom: 1rem;
@@ -34,9 +34,6 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
-/* ========================
-   Tab Navigation
-======================== */
 .tabs {
   display: flex;
   gap: 0.5rem;
@@ -61,48 +58,74 @@ h1 {
 }
 
 /* ========================
-   Position Filter Buttons
+   Position Buttons
 ======================== */
 #position-filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
+  align-items: center;
 }
 
 .pos-btn {
-  padding: 0.4rem 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #444;
+  background: #1a2332;
+  border: 1px solid #2e8bff;
+  color: #bcdfff;
+  min-width: 48px;
+  height: 32px;
   border-radius: 6px;
-  background: #1e1e1e;
-  color: #ccc;
+  font-weight: 500;
+  text-align: center;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pos-btn.active {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
+  background: #2e8bff;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.pos-btn:hover {
+  background: #377ddf;
 }
 
 /* ========================
-   Table Search / Controls
+   Value Filters
 ======================== */
-.table-controls {
+.value-filters {
   display: flex;
-  justify-content: flex-end;
-  padding: 0.5rem 0;
+  gap: 1rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.table-controls input[type="search"] {
-  padding: 0.4rem;
-  border-radius: 4px;
-  border: 1px solid #444;
-  background-color: #1e1e1e;
-  color: var(--fg);
+.value-filters label {
+  color: #ccc;
+  font-size: 0.85rem;
+}
+
+.value-filters input[type="number"] {
+  background-color: #1a2332;
+  border: 1px solid #2e8bff;
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.value-filters input[type="number"]:focus {
+  border-color: #64aaff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(100, 170, 255, 0.3);
 }
 
 /* ========================
@@ -131,16 +154,14 @@ th.sortable:hover {
   text-decoration: underline;
 }
 
-/* ========================
-   Table: Gradient Color Cells
-======================== */
+/* Gradient background styling */
 td[style*="background-color"] {
   color: #111 !important;
   transition: background-color 0.2s ease;
 }
 
 /* ========================
-   Injury Toggle Switch
+   Toggle & Misc Components
 ======================== */
 .inj-toggle {
   display: flex;
