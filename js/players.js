@@ -7,8 +7,17 @@ function handleData(payload) {
 }
 
 function renderPlayers() {
-  const buttonContainer = document.createElement('div');
-  buttonContainer.className = 'pos-filter';
+  const main = document.querySelector('main');
+  let filterBar = document.getElementById('position-filters');
+  if (!filterBar) {
+    filterBar = document.createElement('div');
+    filterBar.id = 'position-filters';
+    filterBar.className = 'pos-filter';
+    main.insertBefore(filterBar, document.getElementById('tables-container'));
+  }
+
+  filterBar.innerHTML = '';
+  // removed buttonContainer creation
   const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
   let activeFilters = new Set(positions);
 
@@ -26,11 +35,11 @@ function renderPlayers() {
       }
       renderRows();
     });
-    buttonContainer.appendChild(btn);
+    filterBar.appendChild(btn);
   });
   const container = document.getElementById('tables-container');
   container.innerHTML = '';
-  container.appendChild(buttonContainer);
+  // removed container.appendChild(buttonContainer);
   const cols = Object.keys(playerData[0] || []);
 
   let sortKey = null;
