@@ -9,7 +9,8 @@ function handleData(payload) {
 function renderPlayers() {
   const container = document.getElementById('tables-container');
   const input = document.getElementById('player-filter');
-  const cols = Object.keys(playerData[0] || {}).filter(c => c !== 'headshot_url');
+  const allCols = Object.keys(playerData[0] || {}).filter(c => c !== 'headshot_url');
+const cols = ['Team', ...allCols.filter(c => c !== 'Name' && c !== 'Team')];
 
   input.addEventListener('input', () => {
     renderRows(input.value.toLowerCase());
