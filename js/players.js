@@ -9,8 +9,9 @@ function handleData(payload) {
 function renderPlayers() {
   const container = document.getElementById('tables-container');
   let cols = Object.keys(playerData[0] || []);
-  cols = cols.filter(c => c !== 'headshot_url' && c !== 'Team');
-  cols = ['headshot_url', cols[0], 'Team', ...cols.slice(1)];
+  cols = cols.filter(c => c !== 'headshot_url');
+  cols = ['_headshot', ...cols.filter(c => c !== 'Team').slice(0, 1), 'Team', ...cols.filter(c => c !== 'Team').slice(1)];
+
   let sortKey = null;
   let sortAsc = true;
 
@@ -18,7 +19,7 @@ function renderPlayers() {
   const thead = document.createElement('thead');
   const tbody = document.createElement('tbody');
 
-  thead.innerHTML = `<tr>${cols.map(col => `<th class="sortable" data-col="${col}">${col}</th>`).join('')}</tr>`;
+  thead.innerHTML = `<tr>${cols.map(col => `<th class="sortable" data-col="${col}">${col === '_headshot' ? '' : col}</th>`).join('')}</tr>`;
 
   thead.addEventListener('click', e => {
     const th = e.target.closest('th');
@@ -31,7 +32,7 @@ function renderPlayers() {
 
   function renderRows() {
     const rows = [...playerData];
-    if (sortKey) {
+    if (sortKey && sortKey !== '_headshot') {
       rows.sort((a, b) => {
         const x = a[sortKey] ?? '';
         const y = b[sortKey] ?? '';
@@ -42,7 +43,12 @@ function renderPlayers() {
     }
 
     tbody.innerHTML = rows.map(row => `
-      <tr>${cols.map(col => `<td>${row[col] ?? ''}</td>`).join('')}</tr>
+      <tr>${cols.map(col => {
+        if (col === '_headshot') {
+          return `<td style="text-align:center;">${row.headshot_url ? `<img src="${row.headshot_url}" alt="headshot" style="width:36px; height:36px; border-radius:50%;">` : ''}</td>`;
+        }
+        return `<td>${row[col] ?? ''}</td>`;
+      }).join('')}</tr>
     `).join('');
   }
 
