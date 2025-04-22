@@ -1,155 +1,139 @@
+/* ========================
+   Root & Theme Variables
+======================== */
 :root {
-    --bg: #121212;
-    --fg: #e0e0e0;
-    --accent: #009cf1; /* FanDuel blue */
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    background-color: var(--bg);
-    color: var(--fg);
-    font-family: sans-serif;
-    padding: 1rem;
-  }
-  
-  header {
-    margin-bottom: 1rem;
-  }
-  
-  h1 {
-    margin-bottom: 0.5rem;
-  }
-  
-  .tabs {
-    display: flex;
-    gap: 0.5rem;
-  }
-  
-  .tab {
-    background: transparent;
-    border: 1px solid var(--fg);
-    color: var(--fg);
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    border-radius: 0.25rem;
-    transition: background 0.2s;
-  }
-  
-  .tab.active,
-  .tab:hover {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
-  }
+  --bg: #121212;
+  --fg: #e0e0e0;
+  --accent: #009cf1;
+}
 
-  .pos-btn {
-    text-decoration: none;
-  }  
-  
-  section {
-    margin-top: 1rem;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  th, td {
-    padding: 0.5rem;
-    border: 1px solid #333;
-  }
+/* ========================
+   Global Reset & Base
+======================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  td {
-    transition: background-color 0.2s ease;
-  }  
-  
-  thead {
-    background: #1e1e1e;
-  }
-  
-  .player-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  
-  .player-details {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.9rem;
-  }
-  
-  .player-name-line {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-  
-  .player-name-line .position {
-    font-size: 0.7rem;
-    background: #eee;
-    color: #333;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-  
-  .player-name-line .name {
-    font-weight: 600;
-    color: #009cf1;
-  }
-  
-  .meta {
-    font-size: 0.75rem;
-    color: #ccc;
-    line-height: 1.2;
-  }
-  
-  td.number {
-    text-align: center;
-    font-weight: 500;
-  }
-  
-  .table-controls {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0.5rem 0;
-  }
-  
-  .table-controls input[type=\"search\"] {
-    padding: 0.4rem;
-    border-radius: 4px;
-    border: 1px solid #444;
-    background-color: #1e1e1e;
-    color: var(--fg);
-  }
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: sans-serif;
+  padding: 1rem;
+}
 
-  #position-filters {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-  
-  .pos-btn {
-    padding: 0.4rem 0.75rem;
-    font-size: 1rem;
-    border: 1px solid #444;
-    border-radius: 6px;
-    background: #1e1e1e;
-    color: #ccc;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .pos-btn.active {
-    background: #009cf1;
-    color: white;
-    border-color: #009cf1;
-  }
-  
+/* ========================
+   Header & Page Title
+======================== */
+header {
+  margin-bottom: 1rem;
+}
+
+h1 {
+  margin-bottom: 0.5rem;
+}
+
+/* ========================
+   Tab Navigation
+======================== */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid var(--fg);
+  color: var(--fg);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+
+.tab.active,
+.tab:hover {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+/* ========================
+   Position Filter Buttons
+======================== */
+#position-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.pos-btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #1e1e1e;
+  color: #ccc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.pos-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* ========================
+   Table Search / Controls
+======================== */
+.table-controls {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.5rem 0;
+}
+
+.table-controls input[type="search"] {
+  padding: 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #1e1e1e;
+  color: var(--fg);
+}
+
+/* ========================
+   Table Styles
+======================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #1e1e1e;
+}
+
+th, td {
+  padding: 0.5rem;
+  border: 1px solid #333;
+}
+
+th.sortable {
+  cursor: pointer;
+}
+
+th.sortable:hover {
+  text-decoration: underline;
+}
+
+/* ========================
+   Table: Gradient Color Cells
+======================== */
+td[style*="background-color"] {
+  color: #111 !important;
+  transition: background-color 0.2s ease;
+}
