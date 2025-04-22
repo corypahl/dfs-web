@@ -1,66 +1,66 @@
 :root {
-    --bg: #121212;
-    --fg: #e0e0e0;
-    --accent: #009cf1; /* FanDuel blue */
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    background-color: var(--bg);
-    color: var(--fg);
-    font-family: sans-serif;
-    padding: 1rem;
-  }
-  
-  header {
-    margin-bottom: 1rem;
-  }
-  
-  h1 {
-    margin-bottom: 0.5rem;
-  }
-  
-  .tabs {
-    display: flex;
-    gap: 0.5rem;
-  }
-  
-  .tab {
-    background: transparent;
-    border: 1px solid var(--fg);
-    color: var(--fg);
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    border-radius: 0.25rem;
-    transition: background 0.2s;
-  }
-  
-  .tab.active,
-  .tab:hover {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
-  }
-  
-  section {
-    margin-top: 1rem;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  th, td {
-    padding: 0.5rem;
-    border: 1px solid #333;
-  }
-  
-  thead {
-    background: #1e1e1e;
-  }
+  --bg: #121212;
+  --fg: #e0e0e0;
+  --accent: #009cf1; /* FanDuel blue */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: sans-serif;
+  padding: 1rem;
+}
+
+header {
+  margin-bottom: 1rem;
+}
+
+h1 {
+  margin-bottom: 0.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid var(--fg);
+  color: var(--fg);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background 0.2s;
+}
+
+.tab.active,
+.tab:hover {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+section {
+  margin-top: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 0.5rem;
+  border: 1px solid #333;
+}
+
+thead {
+  background: #1e1e1e;
+}

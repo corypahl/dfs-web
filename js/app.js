@@ -1,20 +1,27 @@
-const API_URL = 'https://script.google.com/home/projects/1QFEtjF9uPlrE9ha5UqjmAsXl1s3TrLpeI795z2-md3kAMmYRqDIXW3Fv/edit';
 let dataStore = {};
 
-// Fetch once, then render selected sheet
-fetch(API_URL)
-  .then(res => {
-    if (!res.ok) throw new Error(res.statusText);
-    return res.json();
-  })
-  .then(payload => {
-    dataStore = payload;
-    initTabs();
-    renderSheet('Players');
-  })
-  .catch(err => console.error('Data load error:', err));
+// Show errors visually on mobile
+window.onerror = (msg, src, row, col, err) => {
+  const p = document.createElement('pre');
+  p.style.color = 'salmon';
+  p.textContent = `ERROR: ${msg} at ${row}:${col}`;
+  document.body.appendChild(p);
+};
 
-// Tab click handling
+window.addEventListener('unhandledrejection', ev => {
+  const p = document.createElement('pre');
+  p.style.color = 'salmon';
+  p.textContent = `Promise rejection: ${ev.reason}`;
+  document.body.appendChild(p);
+});
+
+// Called by JSONP
+function handleData(payload) {
+  dataStore = payload;
+  initTabs();
+  renderSheet('Players');
+}
+
 function initTabs() {
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -25,7 +32,6 @@ function initTabs() {
   });
 }
 
-// Render given sheet name
 function renderSheet(sheetName) {
   const rows = dataStore[sheetName] || [];
   const container = document.getElementById('tables-container');
@@ -54,3 +60,8 @@ function renderSheet(sheetName) {
 
   container.appendChild(section);
 }
+
+// Dynamically inject JSONP script from Apps Script
+(function loadJSONP() {
+  const script = document.createElement('script');
+  script.src = 'https://script.google.com/macros/s/AKfycbzODSyKW5YZpujVWZMr8EQkpMKRwaKPI_lYiAv
