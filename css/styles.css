@@ -69,3 +69,66 @@
     vertical-align: middle;
   }
   
+  .player-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .headshot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #009cf1;
+  }
+  
+  .player-details {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+  }
+  
+  .player-name-line {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  
+  .player-name-line .position {
+    font-size: 0.7rem;
+    background: #eee;
+    color: #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .player-name-line .name {
+    font-weight: 600;
+    color: #009cf1;
+  }
+  
+  .meta {
+    font-size: 0.75rem;
+    color: #ccc;
+    line-height: 1.2;
+  }
+  
+  td.number {
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  .table-controls {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem 0;
+  }
+  
+  .table-controls input[type=\"search\"] {
+    padding: 0.4rem;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background-color: #1e1e1e;
+    color: var(--fg);
+  }
+  
