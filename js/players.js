@@ -28,8 +28,8 @@ function renderPlayers() {
     return;
   }
 
-  const cols = Object.keys(playerData[0]).filter(col => col !== 'headshot_url');
-  const reorderedCols = ['Name', 'Team', ...cols.filter(c => c !== 'Name' && c !== 'Team')];
+  const baseCols = Object.keys(playerData[0]).filter(c => !['headshot_url', 'Name', 'Team']);
+  const reorderedCols = ['headshot_url', 'Name', 'Team', ...baseCols];
 
   const searchBox = document.createElement('div');
   searchBox.className = 'table-controls';
@@ -47,7 +47,10 @@ function renderPlayers() {
   let sortKey = null;
   let sortAsc = true;
 
-  thead.innerHTML = `<tr>${reorderedCols.map(c => `<th class="sortable" data-col="${c}">${c}</th>`).join('')}</tr>`;
+  thead.innerHTML = `<tr>${reorderedCols.map(c => {
+    if (c === 'headshot_url') return '<th></th>';
+    return `<th class="sortable" data-col="${c}">${c}</th>`;
+  }).join('')}</tr>`;
 
   thead.addEventListener('click', e => {
     const th = e.target.closest('th');
@@ -79,16 +82,13 @@ function renderPlayers() {
           : y.toString().localeCompare(x.toString(), undefined, { numeric: true });
       });
     }
+
     tbody.innerHTML = rows.map(row => {
       return `<tr>${reorderedCols.map(col => {
-        let val = row[col] ?? '';
-        if (col === 'Name') {
-          const img = row.headshot_url
-            ? `<img src="${row.headshot_url}" alt="" style="width:24px; height:24px; border-radius:50%; margin-right:0.5rem; vertical-align:middle;">`
-            : '';
-          val = `${img}<span>${val}</span>`;
+        if (col === 'headshot_url') {
+          return `<td>${row[col] ? `<img src="${row[col]}" alt="" style="width:24px; height:24px; border-radius:50%;">` : ''}</td>`;
         }
-        return `<td>${val}</td>`;
+        return `<td>${row[col] ?? ''}</td>`;
       }).join('')}</tr>`;
     }).join('');
   }
