@@ -120,6 +120,7 @@ thead {
 th, td {
   padding: 0.5rem;
   border: 1px solid #333;
+  text-align: center;
 }
 
 th.sortable {
@@ -136,4 +137,50 @@ th.sortable:hover {
 td[style*="background-color"] {
   color: #111 !important;
   transition: background-color 0.2s ease;
+}
+
+/* ========================
+   Injury Toggle Switch
+======================== */
+.inj-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-left: 1rem;
+}
+
+.inj-toggle input {
+  display: none;
+}
+
+.inj-toggle .slider {
+  width: 40px;
+  height: 20px;
+  background-color: #555;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.inj-toggle .slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 2px;
+  top: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.inj-toggle input:checked + .slider {
+  background-color: var(--accent);
+}
+
+.inj-toggle input:checked + .slider::before {
+  transform: translateX(20px);
 }

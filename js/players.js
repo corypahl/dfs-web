@@ -1,10 +1,18 @@
 let playerData = [];
+let injuriesByName = new Set();
 let activeFilters = new Set(['PG', 'SG', 'SF', 'PF', 'C']);
 let defaultSortKey = 'Overall';
+let hideInjured = false;
 
 function handleData(payload) {
   document.getElementById('loading').style.display = 'none';
-  playerData = payload['Players'] || [];
+
+  const allPlayers = payload['Players'] || [];
+  const allInjuries = payload['Injuries'] || [];
+
+  injuriesByName = new Set(allInjuries.map(row => row.Name?.trim()));
+  playerData = allPlayers.filter(row => parseFloat(row['Fpts']) > 0);
+
   renderPlayers();
 }
 
@@ -39,12 +47,28 @@ function renderPlayers() {
     filterBar.appendChild(btn);
   });
 
+  // 💊 Injury toggle switch
+  const injToggleWrapper = document.createElement('label');
+  injToggleWrapper.className = 'inj-toggle';
+  injToggleWrapper.innerHTML = `
+    <input type="checkbox" id="hide-injured">
+    <span class="slider"></span>
+    <span class="label">💊 Hide Injured</span>
+  `;
+  filterBar.appendChild(injToggleWrapper);
+
+  document.getElementById('hide-injured').addEventListener('change', (e) => {
+    hideInjured = e.target.checked;
+    renderRows();
+  });
+
   const container = document.getElementById('tables-container');
   container.innerHTML = '';
-  const cols = Object.keys(playerData[0] || []);
+  const rawCols = Object.keys(playerData[0] || []);
+  const cols = [...rawCols.slice(0, 1), 'Inj', ...rawCols.slice(1)];
 
   let sortKey = defaultSortKey;
-  let sortAsc = false; // Descending by default
+  let sortAsc = false;
 
   const table = document.createElement('table');
   const thead = document.createElement('thead');
@@ -69,16 +93,16 @@ function renderPlayers() {
     const num = parseFloat(val);
     if (isNaN(num)) return '';
     const pct = max === min ? 0 : (num - min) / (max - min);
-    const hue = pct * 120; // 0 = red, 120 = green
+    const hue = pct * 120;
     return `background-color:hsl(${hue}, 70%, 80%);`;
   }
 
   function renderRows() {
     const rows = playerData.filter(row => {
       const pos = row['Pos'] || '';
-      const fpts = parseFloat(row['Fpts']);
-      const validPosition = Array.from(activeFilters).some(f => pos.includes(f));
-      return validPosition && fpts > 0;
+      const isInjured = injuriesByName.has(row['Name']?.trim());
+      const matchesPos = Array.from(activeFilters).some(f => pos.includes(f));
+      return matchesPos && (!hideInjured || !isInjured);
     });
 
     if (sortKey) {
@@ -96,7 +120,10 @@ function renderPlayers() {
         let val = row[col] ?? '';
         let style = '';
 
-        // Format specific columns
+        if (col === 'Inj') {
+          return `<td>${injuriesByName.has(row['Name']?.trim()) ? '💊' : ''}</td>`;
+        }
+
         if (['Fpts Grade', 'Val Grade', 'Overall'].includes(col) && !isNaN(val)) {
           val = parseInt(val);
           style = getGradientStyle(col, val);
