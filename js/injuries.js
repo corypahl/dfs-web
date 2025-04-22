@@ -1,31 +1,34 @@
-let playersByName = new Set();
-let injuries = [];
+let injuriesData = null;
+let playersData = null;
 
 function handleData(payload) {
   document.getElementById('loading').style.display = 'none';
 
-  const playerRows = payload['Players'] || [];
-  const injuryRows = payload['Injuries'] || [];
+  injuriesData = payload['Injuries'] || [];
+  playersData = payload['Players'] || [];
 
-  // Store player names in a Set for quick lookup
-  playersByName = new Set(playerRows.map(p => p.Name?.trim()));
-
-  // Filter injuries: only include players found in Players sheet
-  injuries = injuryRows.filter(row => playersByName.has(row.Name?.trim()));
-
-  renderInjuries();
+  if (injuriesData && playersData) {
+    renderInjuries();
+  }
 }
 
 function renderInjuries() {
+  const playerMap = new Map(playersData.map(p => [p.Name?.trim(), p]));
+  const filtered = injuriesData.filter(row => playerMap.has(row.Name?.trim()));
+
+  console.log("Players loaded:", playersData.length);
+  console.log("Injuries loaded:", injuriesData.length);
+  console.log("Filtered injuries:", filtered.length);
+
   const container = document.getElementById('tables-container');
   container.innerHTML = '';
 
-  if (!injuries.length) {
+  if (!filtered.length) {
     container.innerHTML = '<p><em>No injury data found.</em></p>';
     return;
   }
 
-  const cols = Object.keys(injuries[0]);
+  const cols = Object.keys(filtered[0]);
   let sortKey = null;
   let sortAsc = true;
 
@@ -45,7 +48,7 @@ function renderInjuries() {
   });
 
   function renderRows() {
-    const rows = [...injuries];
+    const rows = [...filtered];
 
     if (sortKey) {
       rows.sort((a, b) => {
@@ -58,7 +61,10 @@ function renderInjuries() {
     }
 
     tbody.innerHTML = rows.map(row => {
-      return `<tr>${cols.map(col => `<td>${row[col] ?? ''}</td>`).join('')}</tr>`;
+      const playerInfo = playerMap.get(row.Name?.trim());
+      const tooltip = playerInfo ? `Fpts: ${playerInfo.Fpts}, Salary: $${parseFloat(playerInfo.Salary).toLocaleString()}, Value: ${parseFloat(playerInfo.Value).toFixed(2)}` : '';
+
+      return `<tr title="${tooltip}">${cols.map(col => `<td>${row[col] ?? ''}</td>`).join('')}</tr>`;
     }).join('');
   }
 
