@@ -24,7 +24,13 @@
       <div id="tables-container"></div>
     </main>
 
-    <script src="js/loadData.js"></script>
-    <script src="js/players.js"></script>
+    <script type="module">
+      import { loadDFSData } from "./js/modules/loadData.js";
+      import { handleData } from "./js/main/players.js";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadDFSData("handleData");
+      });
+    </script>
   </body>
 </html>
