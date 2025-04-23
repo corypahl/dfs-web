@@ -124,7 +124,7 @@ function renderPlayers() {
   const container = document.getElementById('tables-container');
   container.innerHTML = '';
   const rawCols = Object.keys(playerData[0] || []);
-  const cols = [...rawCols.slice(0, 1), 'Inj', ...rawCols.slice(1)];
+  const cols = [...rawCols, 'Inj'];
 
   let sortKey = defaultSortKey;
   let sortAsc = false;
