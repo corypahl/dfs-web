@@ -139,6 +139,13 @@ h1 {
   box-shadow: 0 0 0 2px rgba(100, 170, 255, 0.3);
 }
 
+.value-filters.stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
 /* ========================
    Table Styles
 ======================== */

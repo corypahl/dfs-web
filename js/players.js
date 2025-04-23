@@ -8,48 +8,7 @@ let minSalary = parseFloat(localStorage.getItem('minSalary')) || 0;
 let maxSalary = parseFloat(localStorage.getItem('maxSalary')) || Infinity;
 let minFpts = parseFloat(localStorage.getItem('minFpts')) || 0;
 
-const SPORT_POSITIONS = {
-  NBA: ['PG', 'SG', 'SF', 'PF', 'C'],
-  NFL: ['QB', 'RB', 'WR', 'TE', 'DST'],
-  MLB: ['P', 'C', '1B', '2B', '3B', 'SS', 'OF'],
-  NHL: ['C', 'LW', 'RW', 'D', 'G']
-};
-
-function detectSportFromPlayers(players) {
-  const allPositions = new Set(
-    players.flatMap(p => (p.Pos ?? '').split(/[\s/]+/).filter(Boolean))
-  );
-  let bestSport = 'NBA';
-  let maxMatches = 0;
-  for (const [sport, knownPositions] of Object.entries(SPORT_POSITIONS)) {
-    const matchCount = Array.from(allPositions).filter(pos => knownPositions.includes(pos)).length;
-    if (matchCount > maxMatches) {
-      bestSport = sport;
-      maxMatches = matchCount;
-    }
-  }
-  return bestSport;
-}
-
-function handleData(payload) {
-  document.getElementById('loading').style.display = 'none';
-
-  const allPlayers = payload['Players'] || [];
-  const allInjuries = payload['Injuries'] || [];
-
-  allInjuries.forEach(inj => {
-    if (inj.Name?.trim()) {
-      injuriesByName.set(inj.Name.trim(), inj);
-    }
-  });
-
-  playerData = allPlayers.filter(row => parseFloat(row['Fpts']) > 0);
-  CURRENT_SPORT = detectSportFromPlayers(playerData);
-
-  renderPlayers();
-}
-
-function renderPlayers() {
+function renderPlayers(positionList = []) {
   const main = document.querySelector('main');
   let filterBar = document.getElementById('position-filters');
   if (!filterBar) {
@@ -60,7 +19,7 @@ function renderPlayers() {
   }
 
   filterBar.innerHTML = '';
-  const positions = SPORT_POSITIONS[CURRENT_SPORT];
+  const positions = positionList || [];
   activeFilters = new Set(positions);
 
   positions.forEach(pos => {
@@ -124,7 +83,7 @@ function renderPlayers() {
   const container = document.getElementById('tables-container');
   container.innerHTML = '';
   const rawCols = Object.keys(playerData[0] || []);
-  const cols = [...rawCols, 'Inj'];
+  const cols = [...rawCols, 'Inj']; // Inj at the end
 
   let sortKey = defaultSortKey;
   let sortAsc = false;
@@ -153,14 +112,19 @@ function renderPlayers() {
     if (isNaN(num)) return '';
     const pct = max === min ? 0 : (num - min) / (max - min);
     const hue = pct * 120;
-    return `background-color:hsl(${hue}, 70%, 80%);`;
+    return `background-color:hsl(${hue}, 70%, 80%)`;
   }
 
   function renderRows() {
     const rows = playerData.filter(row => {
       const pos = row['Pos'] || '';
       const isInjured = injuriesByName.has(row['Player']?.trim());
-      const matchesPos = Array.from(activeFilters).some(f => pos.includes(f));
+      const matchesPos = Array.from(activeFilters).some(f => {
+        if (f === 'OF') {
+          return ['LF', 'CF', 'RF'].some(sub => pos.includes(sub));
+        }
+        return pos.includes(f);
+      });
       const salary = parseFloat(row['Salary']);
       const fpts = parseFloat(row['Fpts']);
       const passesSalary = !isNaN(salary) && salary >= minSalary && salary <= maxSalary;
@@ -211,8 +175,25 @@ function renderPlayers() {
   container.appendChild(table);
 }
 
+function handleData(payload) {
+  document.getElementById('loading').style.display = 'none';
+
+  const allPlayers = payload['Players'] || [];
+  const allInjuries = payload['Injuries'] || [];
+  const config = payload['Config']?.[0] || {};
+  CURRENT_SPORT = config.Sport || 'NBA';
+
+  allInjuries.forEach(inj => {
+    if (inj.Name?.trim()) {
+      injuriesByName.set(inj.Name.trim(), inj);
+    }
+  });
+
+  playerData = allPlayers.filter(row => parseFloat(row['Fpts']) > 0);
+  const CONFIG_POSITIONS = (config.Positions || '').split(',');
+  renderPlayers(CONFIG_POSITIONS);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  const script = document.createElement('script');
-  script.src = 'https://script.google.com/macros/s/AKfycbzODSyKW5YZpujVWZMr8EQkpMKRwaKPI_lYiAv2mxDe-dCr9LRfEjt8-wzqBB_X4QKxug/exec?callback=handleData';
-  document.body.appendChild(script);
+  loadDFSData('handleData');
 });
