@@ -3,16 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DFS Dashboard</title>
+    <title>DFS Lineup Builder</title>
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
     <header>
-      <h1>DFS Dashboard</h1>
-      <nav class="tabs">
-        <a href="index.html" class="tab active">Dashboard</a>
-        <a href="players.html" class="tab">Players</a>
-      </nav>
+      <h1>DFS Lineup Builder</h1>
     </header>
 
     <div id="loading">
@@ -20,10 +16,16 @@
     </div>
 
     <main>
-      <section id="summary"></section>
-      <section id="player-preview"></section>
+      <div id="tables-container"></div>
     </main>
 
-    <script src="js/index.js"></script>
+    <script type="module">
+      import { loadDFSData } from "./js/modules/loadData.js";
+      import { handleData } from "./js/main/index.js";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadDFSData("handleData");
+      });
+    </script>
   </body>
 </html>

@@ -1,15 +1,23 @@
-export function buildTable(playerData, cols, injuriesByName, getGradientStyle, sortKey, sortAsc) {
+export function buildTable(playerData, cols, matchupsByTeam, injuriesByName, getGradientStyle, sortKey, sortAsc) {
     const table = document.createElement('table');
     const thead = document.createElement('thead');
     const tbody = document.createElement('tbody');
 
-    thead.innerHTML = `<tr>${cols.map(col => `<th class="sortable" data-col="${col}">${col}</th>`).join('')}</tr>`;
-    table.appendChild(thead);
-    table.appendChild(tbody);
+    // Build the header row
+    thead.innerHTML = `<tr>${cols
+        .map(col => `<th class=\"sortable\" data-col=\"${col}\">${col}</th>`)
+        .join('')}</tr>`;
 
+    /**
+     * Renders all rows into the tbody.
+     * @param {string} sortKey – the column to sort by
+     * @param {boolean} sortAsc – true for ascending, false for descending
+     * @param {Array<Object>} rows – array of row data objects
+     */
     function renderRows(sortKey, sortAsc, rows) {
+        const sorted = rows ? [...rows] : [];
         if (sortKey) {
-            rows.sort((a, b) => {
+            sorted.sort((a, b) => {
                 const x = a[sortKey] ?? '';
                 const y = b[sortKey] ?? '';
                 return sortAsc
@@ -18,31 +26,57 @@ export function buildTable(playerData, cols, injuriesByName, getGradientStyle, s
             });
         }
 
-        tbody.innerHTML = rows.map(row => {
-            return `<tr>${cols.map(col => {
-                let val = row[col] ?? '';
-                let style = '';
+        tbody.innerHTML = sorted
+            .map(row => {
+                const cells = cols.map(col => {
+                    let val = row[col] ?? '';
+                    let style = '';
 
-                if (col === 'Inj') {
-                    const injury = injuriesByName.get(row['Player']?.trim());
-                    return `<td title="${injury?.Inury || ''} - ${injury?.Status || ''}">${injury ? '💊' : ''}</td>`;
-                }
+                    // ─── Injury tooltip ───────────────────────────────────────────
+                    if (col === 'Injury') {
+                        const injury = injuriesByName.get(row['Player']?.trim());
+                        const title = `${injury?.Inury || ''} – ${injury?.Status || ''}`;
+                        // Wrap in span for reliable title hover
+                        return `<td><span title=\"${title}\">${injury ? '💊' : ''}</span></td>`;
+                    }
 
-                if (['Fpts Grade', 'Val Grade', 'Overall'].includes(col) && !isNaN(val)) {
-                    val = parseInt(val);
-                    style = getGradientStyle(col, val);
-                } else if (col === 'Fpts' && !isNaN(val)) {
-                    val = parseFloat(val).toFixed(1);
-                } else if (col === 'Salary' && !isNaN(val)) {
-                    val = `$${parseFloat(val).toLocaleString()}`;
-                } else if (col === 'Value' && !isNaN(val)) {
-                    val = parseFloat(val).toFixed(2);
-                }
+                    // ─── Team tooltip ─────────────────────────────────────────────
+                    if (col === 'Team') {
+                        const teamKey = val?.trim();
+                        const matchup = matchupsByTeam?.get(teamKey);
+                        if (matchup) {
+                            const lines = [
+                                `Opponent: ${matchup.Opponent || ''}`,
+                                `Game Time: ${matchup.GameTime || ''}`,
+                                `Spread: ${matchup.Spread || ''}`,
+                                `Total: ${matchup.Total || ''}`
+                            ];
+                            const tooltip = lines.join('\n');
+                            // Wrap in span for reliable title hover
+                            return `<td><span title=\"${tooltip}\">${val}</span></td>`;
+                        }
+                    }
 
-                return `<td style="${style}">${val}</td>`;
-            }).join('')}</tr>`;
-        }).join('');
+                    // ─── Conditional formatting ─────────────────────────────────
+                    if (['Fpts Grade', 'Val Grade', 'Overall'].includes(col) && !isNaN(val)) {
+                        val = parseInt(val);
+                        style = getGradientStyle(col, val, playerData);
+                    } else if (col === 'Fpts' && !isNaN(val)) {
+                        val = parseFloat(val).toFixed(1);
+                    } else if (col === 'Salary' && !isNaN(val)) {
+                        val = `$${parseFloat(val).toLocaleString()}`;
+                    }
+
+                    const styleAttr = style ? ` style=\"${style}\"` : '';
+                    return `<td${styleAttr}>${val}</td>`;
+                });
+                return `<tr>${cells.join('')}</tr>`;
+            })
+            .join('');
     }
 
-    return { table, renderRows, thead };
+    table.appendChild(thead);
+    table.appendChild(tbody);
+
+    return { table, thead, renderRows };
 }

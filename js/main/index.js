@@ -1,55 +1,26 @@
+import { setupFilters } from '../modules/filters.js';
+import { buildTable } from '../modules/table.js';
+import { mapMatchupsByTeam } from '../modules/matchups.js';
+import { mapInjuriesByName } from '../modules/injuries.js';
+import { getGradientStyle, sortRows } from '../modules/utils.js';
+
 let playerData = [];
-let activeFilters = new Set(['PG', 'SG', 'SF', 'PF', 'C']);
+let matchupsByTeam = new Map();
+let injuriesByName = new Map();
+let sortKey = 'Overall';
+let sortAsc = false;
+let CURRENT_SPORT = 'NFL';
+let filtersController;
 
-function handleData(payload) {
-  document.getElementById('loading').style.display = 'none';
-  playerData = payload['Players'] || [];
-  renderPlayers();
-}
-
-function renderPlayers() {
-  const main = document.querySelector('main');
-  let filterBar = document.getElementById('position-filters');
-  if (!filterBar) {
-    filterBar = document.createElement('div');
-    filterBar.id = 'position-filters';
-    filterBar.className = 'pos-filter';
-    main.insertBefore(filterBar, document.getElementById('tables-container'));
-  }
-
-  filterBar.innerHTML = '';
-  const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
-  activeFilters = new Set(positions);
-
-  positions.forEach(pos => {
-    const btn = document.createElement('button');
-    btn.textContent = pos;
-    btn.classList.add('pos-btn', 'active');
-    btn.addEventListener('click', () => {
-      if (activeFilters.has(pos)) {
-        activeFilters.delete(pos);
-        btn.classList.remove('active');
-      } else {
-        activeFilters.add(pos);
-        btn.classList.add('active');
-      }
-      renderRows();
-    });
-    filterBar.appendChild(btn);
-  });
+function renderPlayers(positionList = []) {
+  filtersController = setupFilters(positionList, renderFiltered);
+  filtersController.attachListeners();
 
   const container = document.getElementById('tables-container');
   container.innerHTML = '';
-  const cols = Object.keys(playerData[0] || []);
+  const cols = [...Object.keys(playerData[0] || []), 'Injury'];
 
-  let sortKey = null;
-  let sortAsc = true;
-
-  const table = document.createElement('table');
-  const thead = document.createElement('thead');
-  const tbody = document.createElement('tbody');
-
-  thead.innerHTML = `<tr>${cols.map(col => `<th class="sortable" data-col="${col}">${col}</th>`).join('')}</tr>`;
+  const { table, renderRows, thead } = buildTable(playerData, cols, matchupsByTeam,injuriesByName, (col, val) => getGradientStyle(col, val, playerData), sortKey, sortAsc);
 
   thead.addEventListener('click', e => {
     const th = e.target.closest('th');
@@ -57,55 +28,48 @@ function renderPlayers() {
     const col = th.dataset.col;
     sortAsc = (sortKey === col) ? !sortAsc : true;
     sortKey = col;
-    renderRows();
+    renderFiltered();
   });
 
-  function renderRows() {
+  function renderFiltered() {
+    const { activeFilters, minSalary, maxSalary, minFpts, hideInjured } = filtersController.getFilters();
+
     const rows = playerData.filter(row => {
       const pos = row['Pos'] || '';
-      return Array.from(activeFilters).some(f => pos.includes(f));
+      const isInjured = injuriesByName.has(row['Player']?.trim());
+      const matchesPos = Array.from(activeFilters).some(f =>
+        f === 'OF' ? ['LF', 'CF', 'RF'].some(sub => pos.includes(sub)) : pos.includes(f)
+      );
+      const salary = parseFloat(row['Salary']);
+      const fpts = parseFloat(row['Fpts']);
+      const passesSalary = !isNaN(salary) && salary >= minSalary && salary <= maxSalary;
+      const passesFpts = !isNaN(fpts) && fpts >= minFpts;
+      return matchesPos && (!hideInjured || !isInjured) && passesSalary && passesFpts;
     });
 
-    if (sortKey) {
-      rows.sort((a, b) => {
-        const x = a[sortKey] ?? '';
-        const y = b[sortKey] ?? '';
-        return sortAsc
-          ? x.toString().localeCompare(y.toString(), undefined, { numeric: true })
-          : y.toString().localeCompare(x.toString(), undefined, { numeric: true });
-      });
-    }
-
-    tbody.innerHTML = rows.map(row => {
-      return `<tr>${cols.map(col => {
-        let val = row[col] ?? '';
-        if (col === 'Fpts' && !isNaN(val)) {
-          val = parseFloat(val).toFixed(1);
-        } else if (col === 'Salary' && !isNaN(val)) {
-          val = `$${parseFloat(val).toLocaleString()}`;
-        } else if (col === 'Value' && !isNaN(val)) {
-          val = parseFloat(val).toFixed(2);
-        }
-        return `<td>${val}</td>`;
-      }).join('')}</tr>`;
-    }).join('');
+    const sorted = sortRows(rows, sortKey, sortAsc);
+    renderRows(sortKey, sortAsc, sorted);
   }
 
-  renderRows();
-  table.appendChild(thead);
-  table.appendChild(tbody);
-  container.innerHTML = '';
+  renderFiltered();
   container.appendChild(table);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const script = document.createElement('script');
-  script.src = 'https://script.google.com/macros/s/AKfycbzODSyKW5YZpujVWZMr8EQkpMKRwaKPI_lYiAv2mxDe-dCr9LRfEjt8-wzqBB_X4QKxug/exec?callback=handleData';
-  document.body.appendChild(script);
+export function handleData(payload) {
+  document.getElementById('loading').style.display = 'none';
 
-  // Delay button cleanup in case content loads later
-  setTimeout(() => {
-    const navButtons = document.querySelector('.nav-buttons');
-    if (navButtons) navButtons.remove();
-  }, 100);
-});
+  const allPlayers = payload['Players'] || [];
+  const allMatchups = payload['Matchups'] || [];
+  const allInjuries = payload['Injuries'] || [];
+  const config = payload['Config']?.[0] || {};
+  CURRENT_SPORT = config.Sport || 'NFL';
+
+  matchupsByTeam = mapMatchupsByTeam(allMatchups);
+  injuriesByName = mapInjuriesByName(allInjuries);
+
+  playerData = allPlayers.filter(row => parseFloat(row['Fpts']) > 0);
+  const CONFIG_POSITIONS = (config.Positions || '').split(',');
+  renderPlayers(CONFIG_POSITIONS);
+}
+
+window.handleData = handleData;
