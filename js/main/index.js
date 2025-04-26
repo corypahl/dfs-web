@@ -1,8 +1,6 @@
-import { setupFilters } from '../modules/filters.js';
-import { buildTable } from '../modules/table.js';
-import { mapMatchupsByTeam } from '../modules/matchups.js';
-import { mapInjuriesByName } from '../modules/injuries.js';
-import { getGradientStyle, sortRows } from '../modules/utils.js';
+import { buildTable } from '../modules/playerTable.js';
+import { setupFilters, sortRows, getGradientStyle } from '../modules/playerTableHelpers.js';
+import { mapMatchupsByTeam, mapInjuriesByName } from '../modules/data.js';
 
 let playerData = [];
 let matchupsByTeam = new Map();
@@ -20,7 +18,7 @@ function renderPlayers(positionList = []) {
   container.innerHTML = '';
   const cols = [...Object.keys(playerData[0] || []), 'Injury'];
 
-  const { table, renderRows, thead } = buildTable(playerData, cols, matchupsByTeam,injuriesByName, (col, val) => getGradientStyle(col, val, playerData), sortKey, sortAsc);
+  const { table, renderRows, thead } = buildTable(playerData, cols, matchupsByTeam, injuriesByName, (col, val) => getGradientStyle(col, val, playerData), sortKey, sortAsc);
 
   thead.addEventListener('click', e => {
     const th = e.target.closest('th');

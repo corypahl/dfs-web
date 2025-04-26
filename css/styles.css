@@ -129,7 +129,7 @@ h1 {
   font-size: 0.85rem;
   width: 100%;
   max-width: 120px;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.4);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -159,7 +159,8 @@ thead {
   background: #1e1e1e;
 }
 
-th, td {
+th,
+td {
   padding: 0.5rem;
   border: 1px solid #333;
   text-align: center;
@@ -217,10 +218,35 @@ td[style*="background-color"] {
   transition: transform 0.3s;
 }
 
-.inj-toggle input:checked + .slider {
+.inj-toggle input:checked+.slider {
   background-color: var(--accent);
 }
 
-.inj-toggle input:checked + .slider::before {
+.inj-toggle input:checked+.slider::before {
   transform: translateX(20px);
+}
+
+/* ——— “Add” column styling ——— */
+.action-header,
+.action-cell {
+  width: 40px;
+  /* or whatever fits your icon */
+  text-align: center;
+  padding: 0.25em;
+}
+
+/* the little blue “+” */
+.add-button {
+  background: none;
+  border: none;
+  color: blue;
+  font-size: 1.2em;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* hover state to give feedback */
+.add-button:hover {
+  color: darkblue;
 }

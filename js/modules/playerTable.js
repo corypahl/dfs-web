@@ -4,9 +4,13 @@ export function buildTable(playerData, cols, matchupsByTeam, injuriesByName, get
     const tbody = document.createElement('tbody');
 
     // Build the header row
-    thead.innerHTML = `<tr>${cols
-        .map(col => `<th class=\"sortable\" data-col=\"${col}\">${col}</th>`)
-        .join('')}</tr>`;
+    thead.innerHTML = `<tr>
+    <th class="action-header"></th>
+    ${cols
+            .map(col => `<th class="sortable" data-col="${col}">${col}</th>`)
+            .join('')}
+</tr>`;
+
 
     /**
      * Renders all rows into the tbody.
@@ -28,6 +32,10 @@ export function buildTable(playerData, cols, matchupsByTeam, injuriesByName, get
 
         tbody.innerHTML = sorted
             .map(row => {
+                const actionCell = `<td class="action-cell">
+      <button class="add-button" aria-label="Add player">+</button>
+    </td>`;
+
                 const cells = cols.map(col => {
                     let val = row[col] ?? '';
                     let style = '';
@@ -70,7 +78,7 @@ export function buildTable(playerData, cols, matchupsByTeam, injuriesByName, get
                     const styleAttr = style ? ` style=\"${style}\"` : '';
                     return `<td${styleAttr}>${val}</td>`;
                 });
-                return `<tr>${cells.join('')}</tr>`;
+                return `<tr>${actionCell}${cells.join('')}</tr>`;
             })
             .join('');
     }
